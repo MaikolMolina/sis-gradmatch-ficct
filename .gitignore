@@ -7,6 +7,8 @@
 gradmatch-*.json
 *service_account*.json
 *credentials*.json
+*firebase*.json
+*google-services*.json
 *.key
 *.pem
 *.p12
@@ -14,6 +16,8 @@ gradmatch-*.json
 .env*
 .env
 gcp-*.json
+Laptop/
+*.zip
 
 # --- ACADEMIC DOCUMENTS, THESIS & GUIDES ---
 *.docx
