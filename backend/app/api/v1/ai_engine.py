@@ -239,23 +239,125 @@ def handle_voice_agent_query(payload: VoiceAgentRequest):
     
     # 1. Intención: GENERAR REPORTE DINÁMICO
     if any(k in text for k in ["reporte", "informe", "estadistica", "avance", "generar reporte", "resumen de tesis"]):
-        return VoiceAgentResponse(
-            intent="GENERATE_DYNAMIC_REPORT",
-            spoken_response="Generando de inmediato el reporte dinámico de avance de grado. Puedes visualizar las métricas y exportarlo a PDF.",
-            action="OPEN_REPORT_MODAL",
-            ui_trigger="SHOW_REPORT_MODAL",
-            data={
+        # Identificar si se solicita un estudiante específico por nombre
+        if any(c in text for c in ["carlos", "condori"]):
+            student_info = {
                 "report_type": "EXPEDIENTE_DE_GRADO",
-                "student_name": "Molina Cortez Maikol Anthony",
+                "student_id": 2,
+                "student_name": "Condori Flores Carlos",
+                "registro": "219045123",
+                "career": "Ingeniería en Redes y Telecomunicaciones - FICCT",
+                "thesis_title": "Plataforma IoT de Detección Temprana de Fallas en Redes de Telecomunicaciones",
+                "progress_percentage": 20.0,
+                "current_chapter": "Capítulo 1: Introducción y Delimitación de Redes Ópticas",
+                "assigned_tutor": "Pendiente de Asignación por Dirección de Carrera",
+                "status": "PENDIENTE_ASIGNACION",
+                "total_observations": 0,
+                "resolved_observations": 0,
+                "estimated_defense_days": 140,
+                "generated_at": datetime.now().strftime("%d/%m/%Y %H:%M")
+            }
+            spoken = "Generando el reporte dinámico de grado para el estudiante Carlos Condori. Su avance actual es del 20% en fase de perfil."
+        elif any(g in text for g in ["andrea", "guzman", "guzmán"]):
+            student_info = {
+                "report_type": "EXPEDIENTE_DE_GRADO",
+                "student_id": 3,
+                "student_name": "Guzmán Silva Andrea",
+                "registro": "220199432",
                 "career": "Ingeniería en Sistemas - FICCT",
+                "thesis_title": "Modelo Predictivo de Deserción Universitaria con Redes Neuronales y Bases de Datos Vectoriales",
+                "progress_percentage": 95.0,
+                "current_chapter": "Borrador Consolidado Completo para Tribunal Evaluador",
+                "assigned_tutor": "Lic. Luis Vargas Pérez",
+                "status": "APROBADO (Listo para Tribunal)",
+                "total_observations": 2,
+                "resolved_observations": 2,
+                "estimated_defense_days": 25,
+                "generated_at": datetime.now().strftime("%d/%m/%Y %H:%M")
+            }
+            spoken = "Generando el reporte dinámico de grado para Andrea Guzmán. Su expediente se encuentra al 95% con aprobación del tutor."
+        else:
+            student_info = {
+                "report_type": "EXPEDIENTE_DE_GRADO",
+                "student_id": 1,
+                "student_name": "Molina Cortez Maikol Anthony",
+                "registro": "220011559",
+                "career": "Ingeniería en Sistemas - FICCT",
+                "thesis_title": "Sistema Inteligente para la Gestión de Proyectos de Grado y Asignación Automatizada Estudiante-Tutor mediante Machine Learning",
                 "progress_percentage": 68.5,
-                "current_chapter": "Capítulo 3: Manual de Calidad SQA",
+                "current_chapter": "Capítulo 3: Metodología, Arquitectura C4 y Pruebas McCabe",
                 "assigned_tutor": "Ing. Rolando Antoni Martínez Canedo",
                 "status": "OBSERVADO (En subsanación activa)",
                 "total_observations": 3,
                 "resolved_observations": 2,
+                "estimated_defense_days": 110,
                 "generated_at": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
+            spoken = "Generando de inmediato el reporte dinámico de avance de grado. Puedes visualizar las métricas y exportarlo a PDF."
+
+        return VoiceAgentResponse(
+            intent="GENERATE_DYNAMIC_REPORT",
+            spoken_response=spoken,
+            action="OPEN_REPORT_MODAL",
+            ui_trigger="SHOW_REPORT_MODAL",
+            data=student_info
+        )
+
+    # 1.5 Intención: CLASIFICADOR SEMÁNTICO POR DEEP LEARNING
+    elif any(k in text for k in ["clasificar", "deep learning", "analizar tema", "clasificacion tematica", "eje tematico", "eje", "nlp"]):
+        # Obtener título y resumen contextual o de prueba
+        sample_title = "Sistema Inteligente de Gestión de Proyectos de Grado mediante Machine Learning"
+        sample_abstract = "Modelado con representaciones vectoriales densas de 768 dimensiones, procesamiento de lenguaje natural y matching semántico para la FICCT."
+        if any(c in text for c in ["carlos", "condori", "redes", "iot"]):
+            sample_title = "Plataforma IoT de Detección Temprana de Fallas en Redes de Telecomunicaciones"
+            sample_abstract = "Monitoreo en tiempo real de nodos mediante ESP32, protocolo MQTT y análisis de telemetría para corte de fibra óptica."
+        elif any(g in text for g in ["andrea", "guzman", "desercion"]):
+            sample_title = "Modelo Predictivo de Deserción Universitaria con Redes Neuronales"
+            sample_abstract = "Inferencia analítica sobre historial académico con redes profundas y clustering k-means."
+
+        clf_res = classify_thesis_area(AreaClassificationRequest(title=sample_title, abstract=sample_abstract))
+        spoken = f"He ejecutado el Clasificador por Deep Learning. Tu propuesta corresponde al eje '{clf_res.primary_area}' con un {clf_res.confidence}% de certeza. Recomendación metodológica: {clf_res.methodological_recommendation}"
+        
+        return VoiceAgentResponse(
+            intent="RUN_DEEP_LEARNING_CLASSIFICATION",
+            spoken_response=spoken,
+            action="SHOW_DEEP_LEARNING_MODAL",
+            ui_trigger="SHOW_DEEP_LEARNING_MODAL",
+            data={
+                "title": sample_title,
+                "abstract": sample_abstract,
+                "primary_area": clf_res.primary_area,
+                "confidence": clf_res.confidence,
+                "secondary_area": clf_res.secondary_area,
+                "distribution": clf_res.distribution,
+                "keywords_detected": clf_res.keywords_detected,
+                "methodological_recommendation": clf_res.methodological_recommendation
+            }
+        )
+
+    # 1.8 Intención: CAMBIO RÁPIDO DE USUARIO / ROL
+    elif any(k in text for k in ["cambiar a", "ver como", "iniciar como", "simular usuario"]):
+        target_key = "estudiante.molina"
+        target_name = "Maikol Molina"
+        if "director" in text or "vargas peña" in text:
+            target_key = "director.sistemas"
+            target_name = "Director Ing. Leonardo Vargas"
+        elif "martinez" in text or "martínez" in text:
+            target_key = "docente.martinez"
+            target_name = "Tutor Ing. Rolando Martínez"
+        elif "condori" in text or "carlos" in text:
+            target_key = "estudiante.condori"
+            target_name = "Estudiante Carlos Condori"
+        elif "andrea" in text or "guzman" in text:
+            target_key = "estudiante.guzman"
+            target_name = "Estudiante Andrea Guzmán"
+
+        return VoiceAgentResponse(
+            intent="SWITCH_DEMO_USER",
+            spoken_response=f"Cambiando inmediatamente la sesión a {target_name}.",
+            action="SWITCH_DEMO_USER",
+            ui_trigger="SWITCH_USER",
+            data={"user_key": target_key, "user_name": target_name}
         )
 
     # 2. Intención: VER OBSERVACIONES PENDIENTES

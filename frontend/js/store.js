@@ -74,6 +74,32 @@ const Store = {
             modalidad: 'Proyecto de Grado',
             malla_curricular: 'Plan 187-3 (56/56 asignaturas aprobadas)',
             cpd_status: 'HABILITADO'
+        },
+        'estudiante.condori': {
+            username: 'estudiante.condori',
+            name: 'Condori Flores Carlos',
+            role: 'ESTUDIANTE',
+            email: 'ccondori@ficct.uagrm.edu.bo',
+            avatar: 'CC',
+            registro: '219045123',
+            carrera: 'Ingeniería en Redes y Telecomunicaciones',
+            condicion: 'Egresado Habilitado (Malla Vencida 100%)',
+            modalidad: 'Proyecto de Grado',
+            malla_curricular: 'Plan 187-4 (54/54 asignaturas aprobadas)',
+            cpd_status: 'HABILITADO'
+        },
+        'estudiante.guzman': {
+            username: 'estudiante.guzman',
+            name: 'Guzmán Silva Andrea',
+            role: 'ESTUDIANTE',
+            email: 'aguzman@ficct.uagrm.edu.bo',
+            avatar: 'AG',
+            registro: '220199432',
+            carrera: 'Ingeniería en Sistemas',
+            condicion: 'Egresado Habilitado (Malla Vencida 100%)',
+            modalidad: 'Proyecto de Grado',
+            malla_curricular: 'Plan 187-3 (56/56 asignaturas aprobadas)',
+            cpd_status: 'HABILITADO'
         }
     },
 

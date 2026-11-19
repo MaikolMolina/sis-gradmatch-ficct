@@ -43,6 +43,7 @@ const NavbarComponent = {
             links = [
                 { id: 'director-kpis', icon: '📊', label: 'Mando & Analítica' },
                 { id: 'director-matchmaking', icon: '🤖', label: 'Matchmaking IA' },
+                { id: 'director-classifier', icon: '🧠', label: 'Clasificador DL' },
                 { id: 'director-resolutions', icon: '📜', label: 'Resoluciones RA' },
                 { id: 'director-tribunals', icon: '⚖️', label: 'Designar Tribunales' },
                 { id: 'director-cpd', icon: '🏛️', label: 'Validación CPD' }
@@ -57,6 +58,7 @@ const NavbarComponent = {
             links = [
                 { id: 'student-timeline', icon: '🧭', label: 'Línea de Tiempo' },
                 { id: 'student-profile', icon: '📄', label: 'Cargar Perfil PDF' },
+                { id: 'student-classifier', icon: '🧠', label: 'Clasificador DL' },
                 { id: 'student-draft', icon: '📤', label: 'Subir Borrador' },
                 { id: 'student-observations', icon: '💬', label: 'Mis Observaciones' }
             ];
@@ -74,6 +76,10 @@ const NavbarComponent = {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
                 const view = item.dataset.view;
+                if (view === 'director-classifier' || view === 'student-classifier') {
+                    VoiceAgent.openDeepLearningModal();
+                    return;
+                }
                 Store.setView(view);
             });
         });

@@ -20,8 +20,9 @@ const StudentView = {
 
     // 1. Degree Progress Timeline View
     async renderTimeline(container) {
-        const profile = Store.state.data.profiles.find(p => p.registro === '220011559') || Store.state.data.profiles[0];
-        const student = Store.demoAccounts['estudiante.molina'];
+        const currentReg = Store.state.currentUser?.registro;
+        const profile = (currentReg ? Store.state.data.profiles.find(p => p.registro === currentReg) : null) || Store.state.data.profiles[0];
+        const student = Store.state.currentUser || Store.demoAccounts['estudiante.molina'];
 
         const approvedChapters = profile.chapters.filter(c => c.status === 'APROBADO').length;
         const totalChapters = profile.chapters.length || 1;
@@ -287,6 +288,18 @@ const StudentView = {
                 <div class="form-group">
                     <label class="form-label">Resumen Ejecutivo y Objetivos (Para Extracción de Vectores Semánticos NLP):</label>
                     <textarea class="form-textarea" rows="4" id="profile-summary">El presente trabajo diseña e implementa una plataforma web y móvil inteligente para la Carrera de Ingeniería en Sistemas de la FICCT - UAGRM. Integra procesamiento de lenguaje natural y modelos de similitud coseno vectorial para emparejar perfiles postulantes con la especialidad docente, reduciendo los tiempos de tramitación de 14 semanas a menos de 48 horas.</textarea>
+                </div>
+
+                <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <strong style="color: #166534; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                            <span>🧠</span> Clasificador Semántico por Deep Learning
+                        </strong>
+                        <span style="color: #15803d; font-size: 0.8rem;">Analiza previamente tu título y objetivos para predecir tu eje temático y recomendaciones SQA.</span>
+                    </div>
+                    <button type="button" class="btn" onclick="VoiceAgent.openDeepLearningModal({ title: document.getElementById('profile-title').value, abstract: document.getElementById('profile-summary').value })" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; font-weight: 700; font-size: 0.8rem; padding: 8px 14px;">
+                        ⚡ Analizar con Deep Learning
+                    </button>
                 </div>
 
                 <div class="form-group">
