@@ -1,0 +1,21 @@
+# SIS-GradMatch: Dockerfile Frontend Web SPA & Nginx Reverse Proxy
+# Desarrollador Único: Molina Cortez Maikol Anthony
+# FICCT - UAGRM | Semestre II-2026
+
+FROM nginx:alpine
+
+# Remove default nginx static assets
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy web frontend SPA
+COPY frontend/ /usr/share/nginx/html/portal/
+
+# Copy corporate landing page
+COPY sitio_web_corporativo/ /usr/share/nginx/html/corporativo/
+
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

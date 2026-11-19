@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIS-GradMatch | Portal de Gestión de Proyectos de Grado - FICCT UAGRM</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2232%22><text y=%2226%22 font-size=%2226%22>🎓</text></svg>">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Chart.js for Interactive Metrics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body class="theme-light">
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="brand-logo">
+                <span class="logo-icon">🎓</span>
+                <div class="brand-info">
+                    <span class="brand-title">SIS-GradMatch</span>
+                    <span class="brand-sub">FICCT • UAGRM</span>
+                </div>
+            </div>
+            <div class="system-badge">
+                <span class="badge-dot"></span>
+                <span class="badge-text" id="backend-status">Conectando API...</span>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <!-- Quick Demo Role Switcher -->
+            <div class="role-switcher-container">
+                <span class="switcher-label">Simular Usuario Demo:</span>
+                <div class="role-pills" id="role-selector-pills">
+                    <button class="role-pill active" data-role="DIRECTOR_CARRERA" data-user="director.sistemas" title="M.Sc. Ing. Leonardo Vargas Peña - Director de Carrera">
+                        👔 Director (Ing. Leonardo Vargas)
+                    </button>
+                    <button class="role-pill" data-role="DOCENTE_TUTOR" data-user="docente.martinez" title="Ing. Rolando Antoni Martínez Canedo - Docente de la Materia / Tutor">
+                        👨‍🏫 Tutor (Ing. Rolando Martínez)
+                    </button>
+                    <button class="role-pill" data-role="DOCENTE_TUTOR" data-user="docente.vargas" title="Lic. Luis Vargas Pérez - Tutor Especialista">
+                        👨‍💻 Tutor (Lic. Luis Vargas)
+                    </button>
+                    <button class="role-pill" data-role="ESTUDIANTE" data-user="estudiante.molina" title="Molina Cortez Maikol Anthony - Postulante de Grado">
+                        👨‍🎓 Estudiante (Maikol Molina)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <button class="nav-link-btn" onclick="Store.resetState()" title="Restablecer datos locales a versión limpia v8.0" style="background: transparent; border: 1px solid #cbd5e1; cursor: pointer; color: #64748b; font-size: 0.75rem;">
+                🔄 Restablecer Datos
+            </button>
+            <a href="../sitio_web_corporativo/index.html" class="nav-link-btn" title="Ir al Sitio Corporativo y Chatbot GradBot">
+                🌐 Sitio Corporativo
+            </a>
+            <div class="user-profile-menu">
+                <div class="user-avatar" id="current-user-avatar">DM</div>
+                <div class="user-meta">
+                    <span class="user-name" id="current-user-name">Director Sistemas</span>
+                    <span class="user-role-label" id="current-user-role">DIRECTOR_CARRERA</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Application Shell -->
+    <div class="app-shell">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar" id="app-sidebar">
+            <div class="sidebar-section-title">MENÚ PRINCIPAL</div>
+            <nav class="sidebar-nav" id="sidebar-nav-links">
+                <!-- Dynamically generated according to active role -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="developer-info-card">
+                    <div class="dev-tag">DESARROLLADOR ÚNICO</div>
+                    <div class="dev-name">Molina Cortez Maikol Anthony</div>
+                    <div class="dev-context">Ingeniería de Software II • 2026</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main View Container -->
+        <main class="app-main-content" id="main-content">
+            <div class="loading-spinner-container">
+                <div class="spinner"></div>
+                <p>Cargando módulo del sistema...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals Container -->
+    <div id="modal-container" class="modal-overlay hidden">
+        <div class="modal-card" id="modal-content">
+            <!-- Dynamic Modal Content -->
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- JavaScript Files with Cache Busting -->
+    <script src="js/store.js?v=8.0"></script>
+    <script src="js/api.js?v=8.0"></script>
+    <script src="js/components/navbar.js?v=8.0"></script>
+    <script src="js/components/student_view.js?v=8.0"></script>
+    <script src="js/components/tutor_view.js?v=8.0"></script>
+    <script src="js/components/director_view.js?v=8.0"></script>
+    <script src="js/components/resolution_modal.js?v=8.0"></script>
+    <script src="js/app.js?v=8.0"></script>
+</body>
+</html>

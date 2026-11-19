@@ -1,0 +1,99 @@
+# ==============================================================================
+# SIS-GradMatch: Git Ignore Specification
+# FICCT - UAGRM | Molina Cortez Maikol Anthony
+# ==============================================================================
+
+# --- SECURITY & CLOUD CREDENTIALS (CRITICAL: NEVER COMMIT) ---
+gradmatch-*.json
+*service_account*.json
+*credentials*.json
+*.key
+*.pem
+*.p12
+*.pfx
+.env*
+.env
+gcp-*.json
+
+# --- ACADEMIC DOCUMENTS, THESIS & GUIDES ---
+*.docx
+*.doc
+*.pdf
+*.pptx
+*.xlsx
+~$*
+
+# --- ENTERPRISE ARCHITECT & DIAGRAM ASSETS ---
+*.eap
+*.eapx
+*.feap
+img_ea/
+img_assets/
+test_*.png
+test_*.jpg
+
+# --- DOCUMENT GENERATION & SCRIPT AUTOMATION ---
+assemble_final_document.py
+chapter*.py
+expand_*.py
+docx_helpers.py
+update_word_toc.py
+test_toc.py
+search_transcript.py
+generate_ea_model.py
+generate_visual_assets.py
+CONTEXTO_SISTEMA_GRADMATCH.md
+
+# --- PYTHON CACHES & ARTIFACTS ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+venv/
+env/
+ENV/
+
+# --- FLUTTER & DART INTERMEDIATES ---
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.idea/
+mobile/.vscode/
+mobile/build/app/
+mobile/build/native_assets/
+mobile/build/test_cache/
+mobile/build/unit_test_assets/
+mobile/build/windows/
+mobile/build/linux/
+mobile/build/macos/
+mobile/build/ios/
+
+# --- LOCAL DATABASE & EPHEMERAL STORAGE ---
+*.db
+*.sqlite
+*.sqlite3
+storage/thesis_state.json
+storage/drafts/*
+!storage/drafts/.gitkeep
+storage/profiles/*
+!storage/profiles/.gitkeep
+storage/documents/*
+!storage/documents/.gitkeep
+
+# --- IDE, SCRATCH & AGENT SYSTEM DIRS ---
+.idea/
+.vscode/
+scratch/
+.system_generated/
+*.log
+*.tmp

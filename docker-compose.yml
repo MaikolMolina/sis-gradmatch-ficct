@@ -1,0 +1,50 @@
+version: '3.8'
+
+# ==============================================================================
+# SIS-GradMatch: Docker Compose Deployment Stack
+# Facultad de Ingeniería en Ciencias de la Computación y Telecomunicaciones - UAGRM
+# Desarrollador Único: Molina Cortez Maikol Anthony
+# Materia: Ingeniería de Software II & Taller de Grado | II-2026
+# ==============================================================================
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: sis_gradmatch_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=SIS-GradMatch
+      - API_V1_STR=/api/v1
+      - PORT=8000
+    volumes:
+      - ./storage:/app/storage
+      - ./gradmatch.db:/app/gradmatch.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - gradmatch_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: sis_gradmatch_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - gradmatch_network
+
+networks:
+  gradmatch_network:
+    driver: bridge
