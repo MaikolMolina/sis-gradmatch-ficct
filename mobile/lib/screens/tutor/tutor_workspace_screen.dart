@@ -4,6 +4,7 @@ import '../../models/thesis_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/api_service.dart';
 import '../../services/thesis_repository.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/status_badge.dart';
 import '../login_screen.dart';
 import 'draft_review_screen.dart';
@@ -51,6 +52,88 @@ class _TutorWorkspaceScreenState extends State<TutorWorkspaceScreen> {
     });
   }
 
+  void _showNotificationsDialog(BuildContext context) {
+    NotificationService.instance.markAllAsRead();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.notifications_active, color: Colors.amber, size: 26),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Alertas Tutoriales en Vivo (FCM)',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                      ),
+                      ValueListenableBuilder<String>(
+                        valueListenable: NotificationService.instance.connectionStatus,
+                        builder: (_, status, __) => Text(
+                          'Firebase Cloud Messaging • $status',
+                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const Divider(height: 20),
+            Expanded(
+              child: ValueListenableBuilder<List<NotificationItem>>(
+                valueListenable: NotificationService.instance.notificationsNotifier,
+                builder: (_, list, __) {
+                  if (list.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text('No hay alertas tutoriales pendientes.'),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: list.length,
+                    itemBuilder: (_, i) {
+                      final item = list[i];
+                      return ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: Color(0xFFEFF6FF),
+                          child: Icon(Icons.assignment_turned_in, color: Color(0xFF2563EB), size: 20),
+                        ),
+                        title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        subtitle: Text(item.message, style: const TextStyle(fontSize: 11)),
+                        trailing: Text(item.timestamp, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = AuthService().currentUser;
@@ -79,6 +162,19 @@ class _TutorWorkspaceScreenState extends State<TutorWorkspaceScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: ValueListenableBuilder<int>(
+              valueListenable: NotificationService.instance.unreadCountNotifier,
+              builder: (_, count, __) => count > 0
+                  ? Badge(
+                      label: Text('$count'),
+                      child: const Icon(Icons.notifications_active, color: Colors.amber),
+                    )
+                  : const Icon(Icons.notifications_none, color: Colors.white),
+            ),
+            tooltip: 'Alertas FCM de Entregas de Estudiantes',
+            onPressed: () => _showNotificationsDialog(context),
+          ),
           IconButton(
             icon: const Icon(Icons.logout, size: 20),
             tooltip: 'Cambiar de Usuario',

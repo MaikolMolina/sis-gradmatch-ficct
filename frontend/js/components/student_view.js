@@ -15,6 +15,11 @@ const StudentView = {
             await this.renderDraftSubmit(container);
         } else if (viewName === 'student-observations') {
             await this.renderObservations(container);
+        } else if (viewName === 'director-matchmaking') {
+            if (window.DirectorView) await DirectorView.renderMatchmakingStudio(container);
+        } else if (viewName === 'student-classifier') {
+            if (window.VoiceAgent) VoiceAgent.openDeepLearningModal();
+            await this.renderTimeline(container);
         }
     },
 
@@ -392,13 +397,23 @@ const StudentView = {
 
     // 3. Draft Submission View with REAL MULTI-FILE UPLOAD TO BACKEND
     async renderDraftSubmit(container) {
-        const profile = Store.state.data.profiles.find(p => p.registro === '220011559') || Store.state.data.profiles[0];
+        const profiles = (Store.state.data && Array.isArray(Store.state.data.profiles) && Store.state.data.profiles.length > 0)
+            ? Store.state.data.profiles
+            : Store.initialData.profiles;
+        let profile = null;
+        if (Store.state.selectedObservationProfileId) {
+            profile = profiles.find(p => p.id === Store.state.selectedObservationProfileId);
+        }
+        if (!profile && Store.state.currentUser && Store.state.currentUser.registro) {
+            profile = profiles.find(p => p.registro === Store.state.currentUser.registro);
+        }
+        if (!profile) profile = profiles[0] || Store.initialData.profiles[0];
 
         container.innerHTML = `
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Carga de Entregables y Borradores de Proyecto de Grado</h1>
-                    <p class="page-subtitle">Modalidad: Proyecto de Grado • Postulante: Molina Cortez Maikol Anthony • Asesor: ${profile.tutor_name || 'Ing. Rolando Antoni Martínez Canedo'}</p>
+                    <p class="page-subtitle">Modalidad: ${profile.modalidad} • Postulante: <strong>${profile.student}</strong> (Reg. ${profile.registro}) • Asesor: <strong>${profile.tutor_name || 'Ing. Rolando Antoni Martínez Canedo'}</strong></p>
                 </div>
             </div>
 
@@ -663,13 +678,26 @@ const StudentView = {
         });
     },
 
-    // 4. Observations List View
+    // 4. Observations List View con Selector Multi-Tesista
     async renderObservations(container) {
-        const profile = Store.state.data.profiles.find(p => p.registro === '220011559') || Store.state.data.profiles[0];
+        const profiles = (Store.state.data && Array.isArray(Store.state.data.profiles) && Store.state.data.profiles.length > 0)
+            ? Store.state.data.profiles
+            : Store.initialData.profiles;
+
+        let profile = null;
+        if (Store.state.selectedObservationProfileId) {
+            profile = profiles.find(p => p.id === Store.state.selectedObservationProfileId);
+        }
+        if (!profile && Store.state.currentUser && Store.state.currentUser.registro) {
+            profile = profiles.find(p => p.registro === Store.state.currentUser.registro);
+        }
+        if (!profile) {
+            profile = profiles[0] || Store.initialData.profiles[0];
+        }
 
         const allObs = [];
-        profile.chapters.forEach(c => {
-            c.observations.forEach(o => {
+        (profile.chapters || []).forEach(c => {
+            (c.observations || []).forEach(o => {
                 allObs.push({ ...o, chapterNumber: c.number, chapterTitle: c.title });
             });
         });
@@ -678,7 +706,7 @@ const StudentView = {
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Historial de Observaciones Pedagógicas del Asesor</h1>
-                    <p class="page-subtitle">Docente Asesor: <strong>${profile.tutor_name || 'Ing. Rolando Antoni Martínez Canedo'}</strong> • Modalidad: Proyecto de Grado</p>
+                    <p class="page-subtitle">Postulante Consultado: <strong>${profile.student}</strong> (Reg. ${profile.registro}) • Asesor: <strong>${profile.tutor_name || 'Ing. Rolando Antoni Martínez Canedo'}</strong> • Modalidad: ${profile.modalidad}</p>
                 </div>
                 <div class="page-actions">
                     <button class="btn btn-secondary" onclick="Store.setView('student-timeline')">
@@ -690,16 +718,34 @@ const StudentView = {
                 </div>
             </div>
 
+            <!-- Selector Interactivo de Tesista para Observaciones -->
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px 18px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.4rem;">👥</span>
+                    <div>
+                        <strong style="color: #0f172a; font-size: 0.95rem;">Seleccionar Tesista para Consultar Observaciones:</strong>
+                        <div style="font-size: 0.78rem; color: #64748b;">Visualiza en tiempo real las correcciones registradas por el asesor pedagógico</div>
+                    </div>
+                </div>
+                <select id="obs-student-select" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #94a3b8; font-weight: 700; font-size: 0.88rem; background: white; color: #0f172a; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" onchange="StudentView.changeObservationStudent(this.value)">
+                    ${profiles.map(p => `
+                        <option value="${p.id}" ${p.id === profile.id ? 'selected' : ''}>
+                            [Reg. ${p.registro}] ${p.student} • Asesor: ${p.tutor_name || 'Sin Asignar'}
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Observaciones Registradas en mis Entregables</h2>
+                    <h2 class="card-title">Observaciones Registradas en los Entregables de ${profile.student}</h2>
                     <span class="status-pill observado">${allObs.length} Observaciones Totales</span>
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     ${allObs.length === 0 ? `
                         <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                            No tienes observaciones pendientes registradas por el docente asesor.
+                            El estudiante <strong>${profile.student}</strong> no tiene observaciones pendientes registradas por el docente asesor.
                         </div>
                     ` : allObs.map(o => `
                         <div style="border: 1px solid var(--border-color); border-left: 5px solid ${o.type === 'TECNICA' ? 'var(--accent-red)' : 'var(--accent-gold)'}; border-radius: var(--radius-md); padding: 18px; background: #ffffff;">
@@ -726,6 +772,12 @@ const StudentView = {
                 </div>
             </div>
         `;
+    },
+
+    changeObservationStudent(profileId) {
+        Store.state.selectedObservationProfileId = parseInt(profileId);
+        const container = document.getElementById('main-content');
+        if (container) this.renderObservations(container);
     },
 
     async onQuickFileSelected(chapterId, inputEl) {

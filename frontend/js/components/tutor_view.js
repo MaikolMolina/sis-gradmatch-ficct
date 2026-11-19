@@ -17,6 +17,8 @@ const TutorView = {
             await this.renderReviewer(container);
         } else if (viewName === 'tutor-dictamen') {
             await this.renderDictamen(container);
+        } else if (viewName === 'director-matchmaking') {
+            if (window.DirectorView) await DirectorView.renderMatchmakingStudio(container);
         }
     },
 

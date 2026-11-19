@@ -447,7 +447,28 @@ const Store = {
             const raw = localStorage.getItem(STORAGE_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw);
-                this.state.data = parsed.data || JSON.parse(JSON.stringify(this.initialData));
+                const defaultData = JSON.parse(JSON.stringify(this.initialData));
+                if (parsed.data && typeof parsed.data === 'object') {
+                    this.state.data = {
+                        ...defaultData,
+                        ...parsed.data
+                    };
+                    if (!Array.isArray(this.state.data.profiles) || this.state.data.profiles.length === 0) {
+                        this.state.data.profiles = defaultData.profiles;
+                    }
+                    if (!Array.isArray(this.state.data.resolutions) || this.state.data.resolutions.length === 0) {
+                        this.state.data.resolutions = defaultData.resolutions;
+                    }
+                    if (!Array.isArray(this.state.data.tribunals) || this.state.data.tribunals.length === 0) {
+                        this.state.data.tribunals = defaultData.tribunals;
+                    }
+                    if (!this.state.data.cpdDatabase) {
+                        this.state.data.cpdDatabase = defaultData.cpdDatabase;
+                    }
+                } else {
+                    this.state.data = defaultData;
+                }
+
                 if (parsed.currentUsername && this.demoAccounts[parsed.currentUsername]) {
                     this.state.currentUser = this.demoAccounts[parsed.currentUsername];
                 }
@@ -516,7 +537,11 @@ const Store = {
 
     // 1. Calculate Matchmaking with Dynamic Weights
     calculateMatchmaking(profileId, weightSemantic = 0.70, weightCapacity = 0.30) {
-        const profile = this.state.data.profiles.find(p => p.id === parseInt(profileId)) || this.state.data.profiles[0];
+        const profiles = (this.state.data && Array.isArray(this.state.data.profiles) && this.state.data.profiles.length > 0)
+            ? this.state.data.profiles
+            : this.initialData.profiles;
+        const profile = profiles.find(p => p && p.id === parseInt(profileId)) || profiles[0] || this.initialData.profiles[0];
+        if (!profile) return null;
         const teachers = [
             this.demoAccounts['docente.martinez'],
             this.demoAccounts['docente.vargas'],

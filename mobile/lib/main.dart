@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'services/auth_service.dart';
 import 'services/thesis_repository.dart';
+import 'services/notification_service.dart';
 import 'screens/login_screen.dart';
 
 /// Punto de Entrada Principal SIS-GradMatch Móvil (Android / iOS / Web)
@@ -13,6 +14,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AuthService().init();
   await ThesisRepository.instance.init();
+  await NotificationService.instance.init(null);
   runApp(const SisGradMatchApp());
 }
 

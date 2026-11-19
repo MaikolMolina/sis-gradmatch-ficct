@@ -219,8 +219,17 @@ const DirectorView = {
 
     // 2. Real AI Matchmaking Studio
     async renderMatchmakingStudio(container) {
-        const profiles = Store.state.data.profiles;
-        const initialProfileId = Store.state.selectedMatchProfileId || profiles[0].id;
+        const profiles = (Store.state.data && Array.isArray(Store.state.data.profiles) && Store.state.data.profiles.length > 0)
+            ? Store.state.data.profiles
+            : Store.initialData.profiles;
+        
+        if (!Store.state.data) Store.state.data = {};
+        if (!Array.isArray(Store.state.data.profiles) || Store.state.data.profiles.length === 0) {
+            Store.state.data.profiles = JSON.parse(JSON.stringify(Store.initialData.profiles));
+        }
+
+        const initialProfile = profiles.find(p => p && p.id === Store.state.selectedMatchProfileId) || profiles[0] || Store.initialData.profiles[0];
+        const initialProfileId = initialProfile ? initialProfile.id : 1;
         Store.state.selectedMatchProfileId = null;
 
         container.innerHTML = `

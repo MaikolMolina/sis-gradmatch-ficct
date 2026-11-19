@@ -6,6 +6,7 @@ import '../../models/draft_model.dart';
 import '../../models/thesis_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/thesis_repository.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/document_viewer_dialog.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/resolution_dialog.dart';
@@ -35,6 +36,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     super.initState();
     _thesis = _repo.thesis;
     _repo.addListener(_onRepoUpdated);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService.instance.init(context);
+    });
   }
 
   @override
@@ -128,12 +132,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   }
 
   void _showNotificationsDialog(BuildContext context) {
+    NotificationService.instance.markAllAsRead();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(20),
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -146,17 +152,20 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               children: [
                 const Icon(Icons.notifications_active, color: Colors.amber, size: 26),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Centro de Alertas Push (FCM)',
                         style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                       ),
-                      Text(
-                        'Firebase Cloud Messaging • FICCT UAGRM',
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ValueListenableBuilder<String>(
+                        valueListenable: NotificationService.instance.connectionStatus,
+                        builder: (_, status, __) => Text(
+                          'Firebase Cloud Messaging • $status',
+                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
                       ),
                     ],
                   ),
@@ -167,7 +176,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 ),
               ],
             ),
-            const Divider(height: 24),
+            const Divider(height: 20),
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -181,7 +190,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Dispositivo móvil conectado al Topic: ficct_gradmatch',
+                      'Suscrito al Topic FCM: ficct_gradmatch (Tiempo Real)',
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E40AF)),
                     ),
                   ),
@@ -189,44 +198,65 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            _buildNotificationItem(
-              icon: Icons.edit_note,
-              color: Colors.orange,
-              title: 'Nueva Observación en Capítulo 3',
-              body: 'Tu tutor Ing. Rolando Martínez ha registrado correcciones metodológicas en la sección 3.6.',
-              time: 'Hace 10 minutos',
+            Expanded(
+              child: ValueListenableBuilder<List<NotificationItem>>(
+                valueListenable: NotificationService.instance.notificationsNotifier,
+                builder: (_, list, __) {
+                  if (list.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text('No hay alertas pendientes en tu expediente.'),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: list.length,
+                    itemBuilder: (_, i) {
+                      final item = list[i];
+                      return _buildNotificationItem(
+                        icon: item.type == 'OBSERVATION' ? Icons.edit_note : Icons.check_circle_outline,
+                        color: item.type == 'OBSERVATION' ? Colors.orange : Colors.green,
+                        title: item.title,
+                        body: item.message,
+                        time: item.timestamp,
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-            _buildNotificationItem(
-              icon: Icons.check_circle_outline,
-              color: Colors.green,
-              title: 'Capítulo 1 Aprobado',
-              body: 'Visto Bueno formal otorgado al Marco Teórico.',
-              time: 'Ayer 16:30',
-            ),
-            _buildNotificationItem(
-              icon: Icons.description_outlined,
-              color: Colors.blue,
-              title: 'Resolución de Grado Emitida',
-              body: 'Resolución RA-FICCT-0482/2026 generada con QR oficial.',
-              time: '15/11/2026',
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             ElevatedButton.icon(
               icon: const Icon(Icons.send_rounded, size: 16),
-              label: const Text('Simular Alerta Push del Tutor al Celular'),
+              label: const Text('Simular Alerta Push del Tutor al Celular (FCM)'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryBlue,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('🔔 Alerta Push FCM despachada al topic ficct_gradmatch.'),
-                    backgroundColor: Colors.green,
+                    content: Text('🔔 Despachando alerta push FCM a la nube...'),
+                    backgroundColor: Colors.blue,
                   ),
                 );
+                final ok = await NotificationService.instance.sendTestPush(
+                  title: '🔔 Alerta de Tutoría FICCT',
+                  body: 'Tu tutor Ing. Rolando Martínez ha registrado una nueva evaluación en tu expediente.',
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(ok
+                          ? '✅ Notificación transmitida y sincronizada exitosamente.'
+                          : '⚠️ Notificación registrada en el servidor.'),
+                      backgroundColor: ok ? Colors.green : Colors.orange,
+                    ),
+                  );
+                }
               },
             ),
           ],
@@ -299,9 +329,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Badge(
-              label: Text('3'),
-              child: Icon(Icons.notifications_active, color: Colors.amber),
+            icon: ValueListenableBuilder<int>(
+              valueListenable: NotificationService.instance.unreadCountNotifier,
+              builder: (_, count, __) => count > 0
+                  ? Badge(
+                      label: Text('$count'),
+                      child: const Icon(Icons.notifications_active, color: Colors.amber),
+                    )
+                  : const Icon(Icons.notifications_none, color: Colors.white),
             ),
             tooltip: 'Centro de Alertas Push (Firebase FCM)',
             onPressed: () => _showNotificationsDialog(context),

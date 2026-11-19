@@ -180,6 +180,26 @@ def send_push_notification(payload: SendPushRequest):
                 )
                 fcm_message_id = messaging.send(message)
                 fcm_status = "broadcast_to_topic"
+
+                # Despachar además a tokens directos de celulares registrados
+                direct_tokens = [s["fcm_token"] for s in _PUSH_SUBSCRIPTIONS if s.get("fcm_token")]
+                for tok in direct_tokens:
+                    try:
+                        m_tok = messaging.Message(
+                            notification=messaging.Notification(
+                                title=payload.title,
+                                body=payload.body
+                            ),
+                            data={
+                                "action_url": payload.action_url or "/portal",
+                                "target_role": payload.target_role or "ESTUDIANTE",
+                                "timestamp": datetime.now().isoformat()
+                            },
+                            token=tok
+                        )
+                        messaging.send(m_tok)
+                    except Exception as tok_err:
+                        print(f"[Firebase] Token push dispatch warning: {tok_err}")
         except Exception as e:
             fcm_status = f"error: {str(e)}"
             print(f"[Firebase] Error enviando mensaje FCM: {e}")

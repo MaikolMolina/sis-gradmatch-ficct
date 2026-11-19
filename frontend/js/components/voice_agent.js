@@ -506,6 +506,8 @@ const VoiceAgent = {
             </div>
         `;
 
+        modalContainer.style.display = 'flex';
+        modalContainer.style.display = 'flex';
         modalContainer.classList.remove('hidden');
     },
 
@@ -588,6 +590,7 @@ const VoiceAgent = {
             </div>
         `;
 
+        modalContainer.style.display = 'flex';
         modalContainer.classList.remove('hidden');
 
         // Si ya venían datos precargados, renderizarlos inmediatamente
@@ -733,7 +736,10 @@ const VoiceAgent = {
 
     closeModal() {
         const modalContainer = document.getElementById('modal-container');
-        if (modalContainer) modalContainer.classList.add('hidden');
+        if (modalContainer) {
+            modalContainer.classList.add('hidden');
+            modalContainer.style.display = 'none';
+        }
     }
 };
 
