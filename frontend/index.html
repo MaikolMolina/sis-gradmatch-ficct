@@ -54,8 +54,17 @@
         </div>
 
         <div class="header-right">
-            <button class="nav-link-btn" onclick="Store.resetState()" title="Restablecer datos locales a versión limpia v8.0" style="background: transparent; border: 1px solid #cbd5e1; cursor: pointer; color: #64748b; font-size: 0.75rem;">
-                🔄 Restablecer Datos
+            <button class="nav-link-btn" onclick="CookieConsent.showTermsModal()" title="Ver Términos y Condiciones Académicos FICCT" style="background: transparent; border: 1px solid #cbd5e1; cursor: pointer; color: #475569; font-size: 0.75rem;">
+                📜 Términos
+            </button>
+            <a href="/api/v1/download/apk" download="SIS-GradMatch-UAGRM.apk" class="nav-link-btn" title="Descargar APK Android para celulares de estudiantes" style="background: #10b981; color: white; border: none; font-size: 0.75rem; font-weight: 600;">
+                📲 Descargar APK
+            </a>
+            <button class="nav-link-btn" onclick="PushNotifications.requestPermissionAndSubscribe()" title="Activar Notificaciones Push" style="background: transparent; border: 1px solid #cbd5e1; cursor: pointer; color: #2563eb; font-size: 0.75rem;">
+                🔔 Alertas Push
+            </button>
+            <button class="nav-link-btn" onclick="VoiceAgent.toggleAgentPanel()" title="Hablar con GradAgent IA o Solicitar Reporte por Voz" style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; border: none; font-size: 0.75rem; font-weight: 600;">
+                🎙️ Agente IA
             </button>
             <a href="../sitio_web_corporativo/index.html" class="nav-link-btn" title="Ir al Sitio Corporativo y Chatbot GradBot">
                 🌐 Sitio Corporativo
@@ -108,13 +117,16 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- JavaScript Files with Cache Busting -->
-    <script src="js/store.js?v=8.0"></script>
-    <script src="js/api.js?v=8.0"></script>
-    <script src="js/components/navbar.js?v=8.0"></script>
-    <script src="js/components/student_view.js?v=8.0"></script>
-    <script src="js/components/tutor_view.js?v=8.0"></script>
-    <script src="js/components/director_view.js?v=8.0"></script>
-    <script src="js/components/resolution_modal.js?v=8.0"></script>
-    <script src="js/app.js?v=8.0"></script>
+    <script src="js/store.js?v=9.0"></script>
+    <script src="js/api.js?v=9.0"></script>
+    <script src="js/components/cookie_consent.js?v=9.0"></script>
+    <script src="js/components/notifications.js?v=9.0"></script>
+    <script src="js/components/voice_agent.js?v=9.0"></script>
+    <script src="js/components/navbar.js?v=9.0"></script>
+    <script src="js/components/student_view.js?v=9.0"></script>
+    <script src="js/components/tutor_view.js?v=9.0"></script>
+    <script src="js/components/director_view.js?v=9.0"></script>
+    <script src="js/components/resolution_modal.js?v=9.0"></script>
+    <script src="js/app.js?v=9.0"></script>
 </body>
 </html>

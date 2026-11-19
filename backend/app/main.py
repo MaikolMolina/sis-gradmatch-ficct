@@ -19,6 +19,8 @@ from backend.app.api.v1.drafts import router as drafts_router
 from backend.app.api.v1.teachers_tribunals_analytics import (
     teachers_router, tribunals_router, analytics_router, cpd_router
 )
+from backend.app.api.v1.ai_engine import router as ai_router
+from backend.app.api.v1.notifications import router as notifications_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -72,6 +74,8 @@ app.include_router(teachers_router, prefix=settings.API_V1_STR)
 app.include_router(tribunals_router, prefix=settings.API_V1_STR)
 app.include_router(analytics_router, prefix=settings.API_V1_STR)
 app.include_router(cpd_router, prefix=settings.API_V1_STR)
+app.include_router(ai_router, prefix=settings.API_V1_STR)
+app.include_router(notifications_router, prefix=settings.API_V1_STR)
 
 # Mount Web Application & Corporate Site Static Files
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -491,3 +495,27 @@ def health_check():
         "nlp_engine": "ready",
         "uptime_sla": "99.9%"
     }
+
+@app.get("/api/v1/download/apk")
+async def download_android_apk():
+    """
+    Descarga directa del instalador APK para smartphones Android de estudiantes y docentes de la FICCT.
+    """
+    candidates = [
+        os.path.join(base_dir, "SIS-GradMatch-UAGRM.apk"),
+        os.path.join(base_dir, "storage", "apk", "SIS-GradMatch-UAGRM.apk"),
+        os.path.join(base_dir, "mobile", "build", "app", "outputs", "flutter-apk", "app-release.apk")
+    ]
+    apk_path = next((p for p in candidates if os.path.exists(p)), None)
+    if not apk_path:
+        raise HTTPException(status_code=404, detail="El instalador APK de Android aún no está disponible.")
+    
+    return FileResponse(
+        path=apk_path,
+        filename="SIS-GradMatch-UAGRM.apk",
+        media_type="application/vnd.android.package-archive",
+        headers={
+            "Content-Disposition": 'attachment; filename="SIS-GradMatch-UAGRM.apk"',
+            "Cache-Control": "public, max-age=3600"
+        }
+    )

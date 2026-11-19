@@ -21,6 +21,7 @@ gcp-*.json
 *.pdf
 *.pptx
 *.xlsx
+*.apk
 ~$*
 
 # --- ENTERPRISE ARCHITECT & DIAGRAM ASSETS ---

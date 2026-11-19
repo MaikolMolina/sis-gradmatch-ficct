@@ -11,6 +11,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 2. Initialize Navbar & Sidebar navigation
         NavbarComponent.init();
 
+        // 2.1 Initialize Cookies Consent & Terms
+        if (window.CookieConsent) CookieConsent.init();
+
+        // 2.2 Initialize Web Push Notifications
+        if (window.PushNotifications) PushNotifications.init();
+
+        // 2.3 Initialize GradAgent Voice & AI Agent
+        if (window.VoiceAgent) VoiceAgent.init();
+
         // 3. Main View Renderer Function
         const renderActiveView = async () => {
             const mainContent = document.getElementById('main-content');
