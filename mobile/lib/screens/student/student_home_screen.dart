@@ -127,6 +127,149 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     }
   }
 
+  void _showNotificationsDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.notifications_active, color: Colors.amber, size: 26),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Centro de Alertas Push (FCM)',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                      ),
+                      Text(
+                        'Firebase Cloud Messaging • FICCT UAGRM',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFBFDBFE)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.check_circle, color: Color(0xFF2563EB), size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Dispositivo móvil conectado al Topic: ficct_gradmatch',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E40AF)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildNotificationItem(
+              icon: Icons.edit_note,
+              color: Colors.orange,
+              title: 'Nueva Observación en Capítulo 3',
+              body: 'Tu tutor Ing. Rolando Martínez ha registrado correcciones metodológicas en la sección 3.6.',
+              time: 'Hace 10 minutos',
+            ),
+            _buildNotificationItem(
+              icon: Icons.check_circle_outline,
+              color: Colors.green,
+              title: 'Capítulo 1 Aprobado',
+              body: 'Visto Bueno formal otorgado al Marco Teórico.',
+              time: 'Ayer 16:30',
+            ),
+            _buildNotificationItem(
+              icon: Icons.description_outlined,
+              color: Colors.blue,
+              title: 'Resolución de Grado Emitida',
+              body: 'Resolución RA-FICCT-0482/2026 generada con QR oficial.',
+              time: '15/11/2026',
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.send_rounded, size: 16),
+              label: const Text('Simular Alerta Push del Tutor al Celular'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🔔 Alerta Push FCM despachada al topic ficct_gradmatch.'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationItem({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String body,
+    required String time,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: color.withOpacity(0.15),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                const SizedBox(height: 2),
+                Text(body, style: const TextStyle(fontSize: 11, color: Colors.black87)),
+                const SizedBox(height: 2),
+                Text(time, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = AuthService().currentUser;
@@ -155,6 +298,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Badge(
+              label: Text('3'),
+              child: Icon(Icons.notifications_active, color: Colors.amber),
+            ),
+            tooltip: 'Centro de Alertas Push (Firebase FCM)',
+            onPressed: () => _showNotificationsDialog(context),
+          ),
           IconButton(
             icon: const Icon(Icons.logout, size: 20),
             tooltip: 'Cambiar de Usuario',

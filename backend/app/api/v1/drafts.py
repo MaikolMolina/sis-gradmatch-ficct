@@ -27,7 +27,7 @@ def submit_draft(
             content_text=req.content_text,
             version=req.version or "v1.0"
         )
-        return DraftResponse(
+        res_draft = DraftResponse(
             id=draft.id,
             assignment_id=draft.assignment_id,
             chapter_number=draft.chapter_number,
@@ -38,6 +38,20 @@ def submit_draft(
             submitted_at=draft.submitted_at,
             observations_count=0
         )
+
+        # Disparar Push Notification al Docente Tutor
+        try:
+            from backend.app.api.v1.notifications import send_push_notification, SendPushRequest
+            send_push_notification(SendPushRequest(
+                title="📥 Nueva Entrega de Tesista",
+                body=f"El estudiante ha presentado el borrador del Capítulo {req.chapter_number} ({req.chapter_title}) para tu revisión.",
+                target_role="DOCENTE_TUTOR",
+                action_url="/portal/#tutor-reviewer"
+            ))
+        except Exception as ep:
+            print("[FCM submit notice]", ep)
+
+        return res_draft
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -92,6 +106,18 @@ def add_observation(
     tu = obs.teacher.user if obs.teacher else None
     t_name = f"{tu.first_name} {tu.last_name}" if tu else "Docente"
 
+    # Disparar Push Notification al Estudiante
+    try:
+        from backend.app.api.v1.notifications import send_push_notification, SendPushRequest
+        send_push_notification(SendPushRequest(
+            title="📝 Nueva Observación en tu Borrador",
+            body=f"El docente {t_name} ha registrado correcciones en tu borrador: '{req.comment[:60]}...'",
+            target_role="ESTUDIANTE",
+            action_url="/portal/#student-observations"
+        ))
+    except Exception as ep:
+        print("[FCM observation notice]", ep)
+
     return ObservationResponse(
         id=obs.id,
         draft_id=obs.draft_id,
@@ -140,6 +166,19 @@ def issue_dictum(
 ):
     """Issue formal approval or correction dictum for a chapter."""
     draft = ThesisWorkflowService.issue_chapter_dictum(db, req.draft_id, req.verdict, req.notes)
+    # Disparar Push Notification al Estudiante sobre el dictamen
+    try:
+        from backend.app.api.v1.notifications import send_push_notification, SendPushRequest
+        verdict_str = "APROBADO con Visto Bueno" if req.verdict == "APROBADO" else "OBSERVADO"
+        send_push_notification(SendPushRequest(
+            title=f"⚖️ Dictamen Emitido: {verdict_str}",
+            body=f"Tu docente tutor ha emitido el dictamen del Capítulo {draft.chapter_number}: {verdict_str}. Revisa tu línea de tiempo.",
+            target_role="ESTUDIANTE",
+            action_url="/portal/#student-timeline"
+        ))
+    except Exception as ep:
+        print("[FCM dictum notice]", ep)
+
     return DraftResponse(
         id=draft.id,
         assignment_id=draft.assignment_id,

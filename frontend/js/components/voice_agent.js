@@ -254,7 +254,7 @@ const VoiceAgent = {
                             <span class="agent-status-label">Agente Autónomo y Asistente por Voz</span>
                         </div>
                     </div>
-                    <button class="agent-close-btn" onclick="VoiceAgent.toggleAgentPanel()">&times;</button>
+                    <button class="agent-close-btn" onclick="VoiceAgent.closeAgentPanel(); event.stopPropagation();" title="Cerrar panel">&times;</button>
                 </div>
 
                 <div class="agent-quick-actions">
@@ -286,13 +286,32 @@ const VoiceAgent = {
         document.body.appendChild(widget);
     },
 
+    closeAgentPanel() {
+        const panel = document.getElementById('grad-agent-panel');
+        if (panel) {
+            panel.classList.add('hidden');
+            panel.style.display = 'none';
+        }
+    },
+
+    openAgentPanel() {
+        const panel = document.getElementById('grad-agent-panel');
+        if (panel) {
+            panel.classList.remove('hidden');
+            panel.style.display = 'flex';
+            const input = document.getElementById('agent-text-input');
+            if (input) input.focus();
+        }
+    },
+
     toggleAgentPanel() {
         const panel = document.getElementById('grad-agent-panel');
         if (!panel) return;
-        panel.classList.toggle('hidden');
-        if (!panel.classList.contains('hidden')) {
-            const input = document.getElementById('agent-text-input');
-            if (input) input.focus();
+        const isHidden = panel.classList.contains('hidden') || panel.style.display === 'none' || window.getComputedStyle(panel).display === 'none';
+        if (isHidden) {
+            this.openAgentPanel();
+        } else {
+            this.closeAgentPanel();
         }
     },
 

@@ -1192,6 +1192,15 @@ body {
     flex-direction: column;
     overflow: hidden;
     animation: popPanel 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10001;
+}
+
+.grad-agent-panel.hidden,
+.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 @keyframes popPanel {
@@ -1233,14 +1242,26 @@ body {
 }
 
 .agent-close-btn {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.15);
     border: none;
-    color: #94a3b8;
-    font-size: 1.4rem;
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.agent-close-btn:hover { color: white; }
+.agent-close-btn:hover {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    transform: scale(1.1);
+}
 
 .agent-quick-actions {
     display: flex;

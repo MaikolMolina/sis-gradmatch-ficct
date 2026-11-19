@@ -420,6 +420,20 @@ async def add_or_update_deliverable(request: Request):
     state["chapters"] = chapters
     state["status"] = "EN_REVISION"
     _save_thesis_state(state)
+
+    # Notificación Push al Tutor y Dirección
+    try:
+        from backend.app.api.v1.notifications import send_push_notification, SendPushRequest
+        d_title = draft.get("title", "Entregable de Grado")
+        send_push_notification(SendPushRequest(
+            title="📥 Nueva Entrega de Tesista",
+            body=f"El estudiante {state.get('studentName', 'Molina Maikol')} ha presentado '{d_title}' para tu revisión.",
+            target_role="DOCENTE_TUTOR",
+            action_url="/portal/#tutor-reviewer"
+        ))
+    except Exception as ep:
+        print("[FCM deliverable notice]", ep)
+
     return JSONResponse(
         content=state,
         headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
@@ -464,6 +478,20 @@ async def add_thesis_observation(request: Request):
     state.setdefault("activeObservations", []).append(obs)
     state["status"] = "OBSERVADO"
     _save_thesis_state(state)
+
+    # Notificación Push al Estudiante
+    try:
+        from backend.app.api.v1.notifications import send_push_notification, SendPushRequest
+        obs_comm = obs.get("comment", "Revisión registrada en el borrador")
+        send_push_notification(SendPushRequest(
+            title="📝 Nueva Observación en tu Borrador",
+            body=f"Tu tutor ha registrado una observación en {obs.get('section', 'tu entregable')}: '{obs_comm[:60]}...'",
+            target_role="ESTUDIANTE",
+            action_url="/portal/#student-observations"
+        ))
+    except Exception as ep:
+        print("[FCM observation notice]", ep)
+
     return JSONResponse(
         content=state,
         headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
