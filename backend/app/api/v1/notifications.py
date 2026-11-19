@@ -43,7 +43,17 @@ try:
             firebase_app = firebase_admin.get_app()
             firebase_initialized = True
     else:
-        print("[Firebase] Aviso: Llave de Firebase Admin no encontrada en rutas candidatas.")
+        # Fallback a Application Default Credentials (ADC) en Google Cloud Run
+        try:
+            if not firebase_admin._apps:
+                firebase_app = firebase_admin.initialize_app(options={'projectId': 'gradmatch-uagrm-2026-515209'})
+                firebase_initialized = True
+                print("[Firebase] Firebase Admin SDK inicializado con Application Default Credentials (Cloud Run).")
+            else:
+                firebase_app = firebase_admin.get_app()
+                firebase_initialized = True
+        except Exception as adc_err:
+            print(f"[Firebase] Aviso: Llave no encontrada y ADC no disponible: {adc_err}")
 except Exception as ex:
     print(f"[Firebase] Error inicializando Firebase Admin SDK: {ex}")
 
