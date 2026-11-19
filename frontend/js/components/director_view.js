@@ -320,27 +320,29 @@ const DirectorView = {
         const valCap = document.getElementById('val-capacity');
 
         const updateProfilePreview = () => {
-            const pId = parseInt(selectEl.value);
-            const p = profiles.find(item => item.id === pId);
+            const pId = parseInt(selectEl ? selectEl.value : initialProfileId) || initialProfileId;
+            const p = profiles.find(item => item && item.id === pId) || profiles[0] || Store.initialData.profiles[0];
             const metaCard = document.getElementById('profile-meta-card');
             const badge = document.getElementById('selected-profile-badge');
 
             if (p && metaCard) {
-                badge.className = `status-pill ${p.status === 'ASIGNADO' ? 'aprobado' : 'pendiente'}`;
-                badge.textContent = p.status.replace('_', ' ');
+                if (badge) {
+                    badge.className = `status-pill ${p.status === 'ASIGNADO' ? 'aprobado' : 'pendiente'}`;
+                    badge.textContent = (p.status || 'EN_REVISION').replace('_', ' ');
+                }
 
                 metaCard.innerHTML = `
                     <div style="font-size: 0.8rem; font-weight: 700; color: var(--primary); margin-bottom: 6px;">EXTRACTO VECTORIAL DEL PERFIL (768 DIMENSIONES)</div>
                     <div style="font-size: 0.85rem; color: #334155; line-height: 1.4; margin-bottom: 8px;">
-                        <em>"${p.abstract}"</em>
+                        <em>"${p.abstract || 'Sin abstract registrado'}"</em>
                     </div>
                     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                         <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);">Áreas temáticas:</span>
-                        ${p.areas.map(a => `<span style="font-size: 0.75rem; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${a}</span>`).join('')}
+                        ${(p.areas || ['Ingeniería de Software']).map(a => `<span style="font-size: 0.75rem; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${a}</span>`).join('')}
                     </div>
                     ${p.tutor_name ? `
                         <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #cbd5e1; font-size: 0.8rem; color: var(--success); font-weight: 700;">
-                            ✓ Tutor Asignado Actual: ${p.tutor_name} (${p.resolution})
+                            ✓ Tutor Asignado Actual: ${p.tutor_name} (${p.resolution || 'En trámite'})
                         </div>
                     ` : ''}
                 `;
@@ -348,9 +350,9 @@ const DirectorView = {
         };
 
         const executeMatch = () => {
-            const pId = parseInt(selectEl.value);
-            const wS = parseInt(slider.value) / 100;
-            const wC = parseInt(sliderCap.value) / 100;
+            const pId = parseInt(selectEl ? selectEl.value : initialProfileId) || initialProfileId;
+            const wS = parseInt(slider ? slider.value : 70) / 100;
+            const wC = parseInt(sliderCap ? sliderCap.value : 30) / 100;
 
             const calculation = Store.calculateMatchmaking(pId, wS, wC);
             if (!calculation) return;
@@ -384,11 +386,25 @@ const DirectorView = {
         const container = document.getElementById('matchmaking-results-container');
         const list = document.getElementById('candidates-list');
         const formulaTag = document.getElementById('results-formula-tag');
+        if (!container || !list) return;
+
+        const currentProfile = calculation.profile || calculation.perfil || (Store.state.data?.profiles ? Store.state.data.profiles[0] : null) || Store.initialData.profiles[0];
+        const profileId = currentProfile ? currentProfile.id : 1;
 
         container.style.display = 'block';
-        formulaTag.textContent = `Ponderación activa: ${(calculation.wSemantic * 100).toFixed(0)}% Semántica + ${(calculation.wCapacity * 100).toFixed(0)}% Plazas Disponibles`;
+        if (formulaTag) {
+            formulaTag.textContent = `Ponderación activa: ${((calculation.wSemantic || 0.7) * 100).toFixed(0)}% Semántica + ${((calculation.wCapacity || 0.3) * 100).toFixed(0)}% Plazas Disponibles`;
+        }
 
-        list.innerHTML = calculation.candidatos.map(c => `
+        const candidates = calculation.candidatos || [];
+        list.innerHTML = candidates.map(c => {
+            const sem = c.similitud_semantica ?? c.afinidad_semantica ?? 0.8;
+            const capScore = c.score_final ?? c.score_balanceo ?? 0.85;
+            const plazas = c.plazas_disponibles ?? c.cupo_disponible ?? (c.cupo_max - c.cupo_actual);
+            const cupoMax = c.cupo_max ?? c.cupo_maximo ?? 5;
+            const uName = c.username || c.teacher_username || 'docente.martinez';
+
+            return `
             <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; background: #ffffff; display: flex; justify-content: space-between; align-items: center; gap: 20px; transition: all 0.2s;">
                 <div style="flex-grow: 1;">
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -403,23 +419,24 @@ const DirectorView = {
                     </p>
 
                     <div style="display: flex; align-items: center; gap: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">
-                        <span>Afinidad Semántica: <strong style="color: var(--primary);">${(c.afinidad_semantica * 100).toFixed(1)}%</strong></span>
-                        <span>Plazas Libres: <strong style="color: var(--success);">${c.cupo_disponible} de ${c.cupo_maximo}</strong></span>
-                        <span>Score Combinado: <strong style="color: var(--accent-red); font-size: 0.95rem;">${(c.score_balanceo * 100).toFixed(1)} pts</strong></span>
+                        <span>Afinidad Semántica: <strong style="color: var(--primary);">${(sem * 100).toFixed(1)}%</strong></span>
+                        <span>Plazas Libres: <strong style="color: var(--success);">${plazas} de ${cupoMax}</strong></span>
+                        <span>Score Combinado: <strong style="color: var(--accent-red); font-size: 0.95rem;">${(capScore * 100).toFixed(1)} pts</strong></span>
                     </div>
 
                     <div class="similarity-progress" style="margin-top: 8px;">
-                        <div class="similarity-fill" style="width: ${c.score_balanceo * 100}%; background: ${c.ranking === 1 ? 'linear-gradient(90deg, #10b981, #059669)' : 'linear-gradient(90deg, #3b82f6, #1d4ed8)'};"></div>
+                        <div class="similarity-fill" style="width: ${capScore * 100}%; background: ${c.ranking === 1 ? 'linear-gradient(90deg, #10b981, #059669)' : 'linear-gradient(90deg, #3b82f6, #1d4ed8)'};"></div>
                     </div>
                 </div>
 
                 <div style="flex-shrink: 0; text-align: right;">
-                    <button class="btn btn-primary" onclick="DirectorView.handleConfirmAssignment(${calculation.perfil.id}, '${c.teacher_username}')">
+                    <button class="btn btn-primary" onclick="DirectorView.handleConfirmAssignment(${profileId}, '${uName}')">
                         ✅ Asignar & Emitir RA
                     </button>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     },
 
     handleConfirmAssignment(profileId, teacherUsername) {

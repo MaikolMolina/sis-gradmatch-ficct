@@ -148,6 +148,22 @@ def send_push_notification(payload: SendPushRequest):
         try:
             from firebase_admin import messaging
 
+            # Configuración Android con canal prioritario y sonido
+            android_cfg = messaging.AndroidConfig(
+                priority="high",
+                notification=messaging.AndroidNotification(
+                    title=payload.title,
+                    body=payload.body,
+                    channel_id="ficct_gradmatch_channel",
+                    icon="ic_launcher",
+                    sound="default",
+                    priority="high",
+                    visibility="public",
+                    default_sound=True,
+                    default_vibrate_timings=True
+                )
+            )
+
             # Si se envía un token específico, enviar directamente al dispositivo
             if payload.fcm_token:
                 message = messaging.Message(
@@ -155,6 +171,7 @@ def send_push_notification(payload: SendPushRequest):
                         title=payload.title,
                         body=payload.body
                     ),
+                    android=android_cfg,
                     data={
                         "action_url": payload.action_url or "/portal",
                         "target_role": payload.target_role or "ESTUDIANTE",
@@ -171,6 +188,7 @@ def send_push_notification(payload: SendPushRequest):
                         title=payload.title,
                         body=payload.body
                     ),
+                    android=android_cfg,
                     data={
                         "action_url": payload.action_url or "/portal",
                         "target_role": payload.target_role or "ESTUDIANTE",
@@ -190,6 +208,7 @@ def send_push_notification(payload: SendPushRequest):
                                 title=payload.title,
                                 body=payload.body
                             ),
+                            android=android_cfg,
                             data={
                                 "action_url": payload.action_url or "/portal",
                                 "target_role": payload.target_role or "ESTUDIANTE",

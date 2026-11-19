@@ -583,13 +583,18 @@ const Store = {
                 teacher: t,
                 nombre: t.name,
                 username: t.username,
+                teacher_username: t.username,
                 departamento: t.department,
                 similitud_semantica: sem,
+                afinidad_semantica: sem,
                 score_capacidad: cap,
                 score_final: finalScore,
+                score_balanceo: finalScore,
                 score_final_pct: Math.round(finalScore * 100),
                 cupo_actual: t.quota_actual,
                 cupo_max: t.quota_max,
+                cupo_maximo: t.quota_max,
+                cupo_disponible: availableQuota,
                 plazas_disponibles: availableQuota,
                 justificacion: `Afinidad semántica del ${(sem * 100).toFixed(1)}% en ${t.specialties.slice(0, 2).join(' y ')}. Cuenta con ${availableQuota} plaza(s) disponible(s).`
             };
@@ -600,6 +605,8 @@ const Store = {
 
         return {
             profile,
+            perfil: profile,
+            perfil_id: profile ? profile.id : 1,
             wSemantic: weightSemantic,
             wCapacity: weightCapacity,
             candidatos: scored
