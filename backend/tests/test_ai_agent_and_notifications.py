@@ -93,8 +93,11 @@ def test_notifications_subscribe_and_push_workflow():
     assert len(res_hist.json()["notifications"]) >= 2
 
 def test_apk_download_endpoint():
-    response = client.get("/api/v1/download/apk")
-    assert response.status_code == 200
-    assert "application/vnd.android.package-archive" in response.headers["content-type"]
-    assert "SIS-GradMatch-UAGRM.apk" in response.headers["content-disposition"]
-    assert len(response.content) > 1000000  # greater than 1 MB
+    response = client.get("/api/v1/download/apk", follow_redirects=False)
+    assert response.status_code in [200, 302]
+    if response.status_code == 302:
+        assert "storage.googleapis.com" in response.headers["location"]
+        assert "SIS-GradMatch-UAGRM.apk" in response.headers["location"]
+    else:
+        assert "application/vnd.android.package-archive" in response.headers["content-type"]
+        assert "SIS-GradMatch-UAGRM.apk" in response.headers["content-disposition"]

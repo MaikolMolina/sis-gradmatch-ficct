@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from backend.app.core.config import settings
 from backend.app.database import engine, Base, SessionLocal
 from backend.app.seed import seed_database
@@ -500,22 +500,7 @@ def health_check():
 async def download_android_apk():
     """
     Descarga directa del instalador APK para smartphones Android de estudiantes y docentes de la FICCT.
+    Redirige a Google Cloud Storage CDN publico para descargas de alto rendimiento sin limites de buffer.
     """
-    candidates = [
-        os.path.join(base_dir, "SIS-GradMatch-UAGRM.apk"),
-        os.path.join(base_dir, "storage", "apk", "SIS-GradMatch-UAGRM.apk"),
-        os.path.join(base_dir, "mobile", "build", "app", "outputs", "flutter-apk", "app-release.apk")
-    ]
-    apk_path = next((p for p in candidates if os.path.exists(p)), None)
-    if not apk_path:
-        raise HTTPException(status_code=404, detail="El instalador APK de Android aún no está disponible.")
-    
-    return FileResponse(
-        path=apk_path,
-        filename="SIS-GradMatch-UAGRM.apk",
-        media_type="application/vnd.android.package-archive",
-        headers={
-            "Content-Disposition": 'attachment; filename="SIS-GradMatch-UAGRM.apk"',
-            "Cache-Control": "public, max-age=3600"
-        }
-    )
+    public_gcs_url = "https://storage.googleapis.com/gradmatch-uagrm-2026-515209-public/SIS-GradMatch-UAGRM.apk"
+    return RedirectResponse(url=public_gcs_url, status_code=302)

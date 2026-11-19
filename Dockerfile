@@ -20,6 +20,7 @@ COPY backend/ ./backend/
 COPY frontend/ ./frontend/
 COPY sitio_web_corporativo/ ./sitio_web_corporativo/
 COPY mobile/build/web/ ./mobile/build/web/
+COPY SIS-GradMatch-UAGRM.apk ./SIS-GradMatch-UAGRM.apk
 
 # Crear directorios para persistencia de archivos subidos y base de datos
 RUN mkdir -p /app/storage/drafts /app/storage/profiles /app/storage/documents
